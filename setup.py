@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 
 with open('requirements.txt') as f:
     required = f.read().splitlines()
@@ -12,14 +12,11 @@ setup(
     include_package_data=True,
     package_data={
         # Include any *.csv files found within the package
-        "worcgist": ['*.csv'], 
-        "worclipo": ['*.csv'], 
-        "worcliver": ['*.csv'], 
+        "worclipo": ['*.csv']
+     
     },
     packages=[
-        "worclipo",
-        "worcliver",
-        "ecg",
-        "worcgist"
+        "worclipo"
+
     ],
 )
