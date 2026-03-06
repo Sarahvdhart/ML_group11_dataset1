@@ -6,6 +6,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import RobustScaler
 from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.linear_model import LogisticRegression
+from preprocessing import CustomPreprocessor
 
 # Data inlezen
 df = pd.read_csv("worclipo/Lipo_radiomicFeatures.csv")
@@ -18,9 +19,38 @@ inner_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
 
 # Pipeline
 pipeline = Pipeline([
-    ('imputer', SimpleImputer(strategy='median')), # Impute missing values with median, hier kijken of we bijvoorbeeld nog een threshold willen toevoegen voor als er bijvoorbeeld zoveel nullen zijn dat we die feature misschien willen verwijderen
-    ('scaler', RobustScaler()), # Scale features using RobustScaler
-    ('feature_selection', SelectKBest(score_func=f_classif)), # Select top k features --> ook hier kijken welke feature selection we nog moeten nemen!!!!
-    ('classifier', LogisticRegression(max_iter=1000, random_state=42)) # Logistic Regression classifier --> kijken welke classifier we nog moeten nemen!!!!
+    ("preprocess", CustomPreprocessor(
+        nan_threshold=0.30,
+        zero_threshold=0.95,
+        clip_iqr=False
+    )),
+    ("feature_selection", SelectKBest(score_func=f_classif)),
+    ("classifier", LogisticRegression(max_iter=2000, solver="liblinear"))
 ])
+
+## testen
+import pandas as pd
+
+df = pd.read_csv("worclipo/Lipo_radiomicFeatures.csv")
+
+y = df["label"].map({"lipoma": 0, "liposarcoma": 1})
+X = df.drop(columns=["ID", "label"])
+
+pre = CustomPreprocessor(
+    nan_threshold=0.30,
+    zero_threshold=0.95,
+    clip_iqr=False
+)
+
+pre.fit(X)
+
+X_clean = pre.transform(X)
+
+print("Original shape:", X.shape)
+print("Processed shape:", X_clean.shape)
+
+import numpy as np
+
+print("NaNs after preprocessing:", np.isnan(X_clean).sum())
+
 
