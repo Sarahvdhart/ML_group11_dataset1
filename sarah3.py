@@ -1,3 +1,5 @@
+#dit is PCA
+
 # General packages 
 import numpy as np
 import pandas as pd
@@ -5,6 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from sklearn.decomposition import PCA
+from sklearn.feature_selection import VarianceThreshold
 from sklearn.preprocessing import RobustScaler, LabelEncoder
 from sklearn.linear_model import LogisticRegression
 
@@ -15,6 +18,13 @@ data = load_data()
 
 # Alleen numerieke kolommen selecteren
 numeric_data = data.select_dtypes(include="number") 
+
+# 1. Features met variantie 0 verwijderen 
+selector = VarianceThreshold(threshold=0.0)
+numeric_data_var = selector.fit_transform(numeric_data)
+feature_names = numeric_data.columns[selector.get_support()]
+
+numeric_data_var = numeric_data
 
 # Data schalen met robust scaler
 scaler = RobustScaler()
