@@ -1,4 +1,6 @@
-#importeren van de nodige libraries
+#Main code for model training and evaluation
+
+# Import libraries
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, GridSearchCV, cross_val_score
 from sklearn.pipeline import Pipeline
@@ -8,27 +10,23 @@ from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.linear_model import LogisticRegression
 from preprocessing import CustomPreprocessor
 
-# Data inlezen
+# Load data
 df = pd.read_csv("worclipo/Lipo_radiomicFeatures.csv")
 y = df["label"].map({"lipoma": 0, "liposarcoma": 1})
 X = df.drop(columns=["ID", "label"])
 
-# Nested CV instellen
+# Nested cross-validation setup
 outer_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 inner_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
 
 # Pipeline
 pipeline = Pipeline([
-    ("preprocess", CustomPreprocessor(
-        nan_threshold=0.30,
-        zero_threshold=0.95,
-        clip_iqr=False
-    )),
-    ("feature_selection", SelectKBest(score_func=f_classif)),
-    ("classifier", LogisticRegression(max_iter=2000, solver="liblinear"))
+    ("preprocess", CustomPreprocessor(nan_threshold=0.30,  zero_threshold=0.95, clip_iqr=False)),
+    ("feature_selection", SelectKBest(score_func=f_classif)), # We will tune the number of features to select later on, in feature_selection.py
+    ("classifier", LogisticRegression(max_iter=2000, solver="liblinear")) # We will tune the regularization strength later on, in model_selection.py, we will try 3 classifiers
 ])
 
-## testen
+## Test if preprocessing works correctly
 import pandas as pd
 
 df = pd.read_csv("worclipo/Lipo_radiomicFeatures.csv")
