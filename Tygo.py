@@ -1,4 +1,6 @@
 from worclipo.load_data import load_data
+import matplotlib.pyplot as plt
+import scipy.stats as stats
 
 data = load_data()
 
@@ -10,7 +12,7 @@ print(f'The number of columns: {len(data.columns)}')
 
 data_numeric = data.select_dtypes(include=["number"])
 var = data_numeric.var()
-selected_columns = var[var > 0.01].index
+selected_columns = var[var > 0.0001].index
 
 data = data[selected_columns]
 print(f'The number of columns: {len(data.columns)}')
