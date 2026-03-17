@@ -8,5 +8,6 @@ def get_xgb_param_grid():
         'n_estimators': [50, 100, 200],
         'max_depth': [3, 5, 7],
         'learning_rate': [0.01, 0.1, 0.2],
-        'subsample': [0.8, 1.0]
+        'subsample': [0.8, 1.0],
+        'colsample_bytree': [0.7, 1.0]
     }
