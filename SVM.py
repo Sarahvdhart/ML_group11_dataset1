@@ -32,11 +32,12 @@ def get_svm_pipeline():
 # inner_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
 
 #hyperparameter tuning
-get_svm_param_grid = {
-    "classifier__kernel": ["linear", "rbf"],
-    "classifier__C": [0.01, 0.1, 1, 10, 100],
-    "classifier__gamma": ["scale", 0.01, 0.1, 1]  # only relevant for rbf
-}
+def get_svm_param_grid():
+    return ({        
+        "classifier__kernel": ["linear", "rbf"],
+        "classifier__C": [0.01, 0.1, 1, 10, 100],
+        "classifier__gamma": ["scale", 0.01, 0.1, 1]  # only relevant for rbf
+    }) 
 
 # grid_search = GridSearchCV(
 #     estimator=get_svm_pipeline(), 
