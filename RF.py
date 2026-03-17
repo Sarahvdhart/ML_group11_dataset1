@@ -1,19 +1,18 @@
-import numpy as np
 import matplotlib.pyplot as plt 
 import pandas as pd
 import sklearn as sk
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import RobustScaler
-from sklearn.model_selection import train_test_split
-from worclipo.load_data import load_data 
+import worclipo.load_data 
 from sklearn.pipeline import Pipeline
-from preprocessing import CustomPreprocessor
+import preprocessing
+from sklearn.feature_selection import SelectFdr, VarianceThreshold, f_classif, SelectKBest
 
 #------------------------------------------------------------------------------------------------
 #Defining the pipeline for Random Forest Classifier
 def get_rf_pipeline():
     return Pipeline([
-        ("preprocess", CustomPreprocessor(
+        ("preprocess", preprocessing.CustomPreprocessor(
             zero_threshold=0.90,
             clip_iqr=False,
             corr_threshold=0.85
