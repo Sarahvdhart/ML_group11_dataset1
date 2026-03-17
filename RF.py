@@ -8,7 +8,7 @@ from sklearn.pipeline import Pipeline
 import preprocessing
 from sklearn.feature_selection import SelectFdr, VarianceThreshold, f_classif, SelectKBest
 
-#------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------
 #Defining the pipeline for Random Forest Classifier
 def get_rf_pipeline():
     return Pipeline([
