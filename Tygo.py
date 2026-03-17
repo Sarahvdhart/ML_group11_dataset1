@@ -1,5 +1,7 @@
 # import packages
 from worclipo.load_data import load_data
+import pandas as pd
+from preprocessing import CustomPreprocessor
 
 # General packages
 import numpy as np
@@ -15,31 +17,28 @@ from sklearn.ensemble import VotingClassifier
 from sklearn.preprocessing import LabelEncoder
 
 # XGBoost
-from xgboost import XGBClassifier
+import xgboost as xgb
 
+#data inladen
+df = pd.read_csv("worclipo/Lipo_radiomicFeatures.csv")
+y = df["label"].map({"lipoma": 0, "liposarcoma": 1})
+X = df.drop(columns=["ID", "label"])
 
-data = load_data()
-
-# Selecting all features for feature selection within XGBoost
-# CHANGE SO YOU DONT USE TEST DATA & NEED PRE PROCESSING
-X = data.drop(columns=['label']).values  
-y_raw = data['label'].values
-
-# Encode string labels to numeric
-le = LabelEncoder()
-y = le.fit_transform(y_raw)
+#preprocessing
+preprocessor = CustomPreprocessor(zero_threshold=0.90, clip_iqr=False, corr_threshold=0.85)
+X_processed = preprocessor.fit_transform(X)
 
 # Train XGBClassifier on all features
-clf = XGBClassifier()
-clf.fit(X, y)
+clf = xgb.XGBClassifier()
+clf.fit(X_processed, y)
 
 # Get top 2 features by importance
 importance = clf.feature_importances_
 top2_idx = np.argsort(importance)[-2:]
-X_top2 = X[:, top2_idx]
+X_top2 = X_processed[:, top2_idx]
 
 # Retrain classifier on top 2 features for visualization
-clf_top2 = XGBClassifier()
+clf_top2 = xgb.XGBClassifier()
 clf_top2.fit(X_top2, y)
 y_pred_top2 = clf_top2.predict(X_top2)
 
