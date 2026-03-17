@@ -9,15 +9,15 @@ from sklearn.pipeline import Pipeline
 from preprocessing import CustomPreprocessor
 
 
-def get_rf_pipeline():
-    return Pipeline([
-        ("preprocess", CustomPreprocessor(
-            zero_threshold=0.90,
-            clip_iqr=False,
-            corr_threshold=0.85
-        )),
-        ("classifier", RandomForestClassifier(random_state=42))
-    ])
+# def get_rf_pipeline():
+#     return Pipeline([
+#         ("preprocess", CustomPreprocessor(
+#             zero_threshold=0.90,
+#             clip_iqr=False,
+#             corr_threshold=0.85
+#         )),
+#         ("classifier", RandomForestClassifier(random_state=42))
+#     ])
 
 
 df = load_data()
