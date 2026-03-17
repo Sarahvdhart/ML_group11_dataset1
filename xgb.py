@@ -1,7 +1,19 @@
+from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
+from preprocessing import CustomPreprocessor
 
 def get_xgb_pipeline():
-    return XGBClassifier(eval_metric='logloss')
+    return Pipeline([
+        ("preprocess", CustomPreprocessor(
+            zero_threshold=0.90,
+            clip_iqr=False,
+            corr_threshold=0.85
+        )),
+        ("classifier", XGBClassifier(
+            eval_metric="logloss",
+            random_state=42
+        ))
+    ])
 
 def get_xgb_param_grid():
     return {
