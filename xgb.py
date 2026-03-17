@@ -1,7 +1,7 @@
 from xgboost import XGBClassifier
 
 def get_xgb_pipeline():
-    return XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+    return XGBClassifier(eval_metric='logloss')
 
 def get_xgb_param_grid():
     return {
