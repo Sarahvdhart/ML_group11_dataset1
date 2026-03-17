@@ -45,7 +45,7 @@ for model_name, (pipeline, param_grid) in models.items():
         n_jobs=-1)
     print(f"{model_name} AUC: {scores.mean():.4f} ± {scores.std():.4f}")
 
-
+# aangepast????
 
 
 ## Test if preprocessing works correctly
