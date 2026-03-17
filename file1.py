@@ -11,7 +11,7 @@ from sklearn.linear_model import LogisticRegression
 from preprocessing import CustomPreprocessor
 from SVM import get_svm_pipeline, get_svm_param_grid
 # from rf import get_rf_pipeline, get_rf_param_grid
-from xgb import get_xgb_pipeline, get_xgb_param_grid
+from XGB import get_xgb_pipeline, get_xgb_param_grid
 
 
 # Load data
