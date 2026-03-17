@@ -1,5 +1,4 @@
 # XGBoost
-
 # import packages
 from worclipo.load_data import load_data
 from preprocessing import CustomPreprocessor
@@ -41,8 +40,9 @@ pipeline = get_xgb_pipeline()
 param_grid = {
     "classifier__max_depth": [3, 5, 7],
     "classifier__n_estimators": [50, 100, 150],
-    "classifier__learning_rate": [0.1, 0.2],
-    "classifier__subsample": [0.5, 0.7, 1.0]
+    "classifier__learning_rate": [0.1, 0.01],
+    "classifier__subsample": [0.5, 0.7, 1.0],
+    "classifier__colsample_bytree": [0.7, 1.0]
 }
 
 # Hyperparamater grid
