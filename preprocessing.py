@@ -1,4 +1,4 @@
-# This file contains the custom preprocessing class used in the pipeline. It includes:
+# This file contains the custom preprocessing class. It includes:
 
 # Importing necessary libraries
 import numpy as np
