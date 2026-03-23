@@ -11,7 +11,7 @@ from sklearn.linear_model import LogisticRegression
 from preprocessing import CustomPreprocessor
 from sklearn.metrics import roc_auc_score 
 from SVM import get_svm_pipeline, get_svm_param_grid
-#from RF import get_rf_pipeline, get_rf_param_grid
+from RF import get_rf_pipeline, get_rf_param_grid
 #from xgb import get_xgb_pipeline, get_xgb_param_grid
 
 
@@ -27,7 +27,7 @@ inner_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
 # models to evaluate
 models = {
     "SVM": (get_svm_pipeline(), get_svm_param_grid()), #nog definieren in svm.py
-#     "Random Forest": (get_rf_pipeline(), get_rf_param_grid()), #nog definieren in rf.py
+    "Random Forest": (get_rf_pipeline(), get_rf_param_grid()), #nog definieren in rf.py
    #  "XGBoost": (get_xgb_pipeline(), get_xgb_param_grid()) #nog definieren in xgb.py
 } 
 
@@ -56,7 +56,7 @@ for model_name, (pipeline, param_grid) in models.items():
         grid = RandomizedSearchCV(
             estimator=pipeline,
             param_distributions=param_grid,  
-            n_iter=40,                       
+            n_iter=40,                      
             cv=inner_cv,
             scoring="roc_auc",
             n_jobs=-1,
