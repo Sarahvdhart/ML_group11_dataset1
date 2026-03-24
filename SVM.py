@@ -3,7 +3,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 from preprocessing import CustomPreprocessor
 from sklearn.feature_selection import VarianceThreshold, f_classif, SelectKBest
-
+from scipy.stats import loguniform, uniform
 
 #pipeline for SVM
 def get_svm_pipeline():
@@ -20,8 +20,10 @@ def get_svm_pipeline():
 
 #hyperparameter tuning
 def get_svm_param_grid():
-    return ({        
-        "classifier__kernel": ["linear", "rbf"],
-        "classifier__C": [0.01, 0.1, 1, 10, 100],
-        "classifier__gamma": ["scale", 0.01, 0.1, 1]  # only relevant for rbf
-    }) 
+    return ({
+        "classifier__kernel": ["linear", "rbf", "poly", "sigmoid"],          # discrete
+        "classifier__C": loguniform(0.01, 100),                              # continue op log-schaal
+        "classifier__gamma": loguniform(0.001, 1),                           # continue op log-schaal
+        "classifier__degree": [2, 3, 4],                                     # discrete
+        "classifier__coef0": uniform(0.0, 1.0)                               # continue uniform 0–1
+    })
