@@ -35,6 +35,8 @@ models = {
 all_results = {}
 roc_data = {}
 
+best_params_all_models = {}
+
 # Loop over models
 for model_name, (pipeline, param_grid) in models.items():
     print(f"\n===== {model_name} =====")
@@ -113,6 +115,8 @@ for model_name, (pipeline, param_grid) in models.items():
         "Specificity": outer_spec
     }
 
+    best_params_all_models[model_name] = best_params_per_fold
+
 # Print summary tabel
 summary = []
 for model, metrics in all_results.items():
@@ -177,3 +181,57 @@ for ax, (model_name, roc_folds) in zip(axes, roc_data.items()):
 plt.suptitle("Mean ROC Curves per Classifier", fontsize=16)
 plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
+
+# Print best classifier
+best_model_name = df_summary.loc[df_summary["Mean AUC"].idxmax(), "Model"]
+print(f"\nBest model based on AUC: {best_model_name}")
+
+from collections import Counter
+import numpy as np
+
+def select_final_hyperparameters(best_params_per_fold, fold_scores):
+    final_params = {}
+    param_names = best_params_per_fold[0].keys()
+
+    for param in param_names:
+        values = [params[param] for params in best_params_per_fold]
+
+        counts = Counter(values)
+        max_count = max(counts.values())
+        candidates = [val for val, count in counts.items() if count == max_count]
+
+        # als één duidelijke winnaar
+        if len(candidates) == 1:
+            final_params[param] = candidates[0]
+        else:
+            # tie-break → beste gemiddelde performance
+            candidate_perf = {}
+
+            for candidate in candidates:
+                scores = [
+                    fold_scores[i]
+                    for i in range(len(best_params_per_fold))
+                    if best_params_per_fold[i][param] == candidate
+                ]
+                candidate_perf[candidate] = np.mean(scores)
+
+            best_candidate = max(candidate_perf, key=candidate_perf.get)
+            final_params[param] = best_candidate
+
+    return final_params
+
+final_best_params = select_final_hyperparameters(
+    best_params_all_models[best_model_name],
+    all_results[best_model_name]["AUC"]
+)
+
+print("\nFinal selected hyperparameters:")
+for k, v in final_best_params.items():
+    print(f"{k}: {v}")
+
+best_pipeline, _ = models[best_model_name]
+
+final_model = best_pipeline.set_params(**final_best_params)
+final_model.fit(X, y)
+
+print(f"\nFinal {best_model_name} model trained on all data.")   
