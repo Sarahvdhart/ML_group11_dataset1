@@ -10,7 +10,7 @@ def get_svm_pipeline():
     return Pipeline([
         ("preprocess", CustomPreprocessor(
             zero_threshold=0.90,
-            clip_iqr=False,
+            clip_iqr=True,
             corr_threshold=0.85
         )),
         ("fold_variance_filter", VarianceThreshold(threshold=0)), #haalt constante features eruit vlak voor anova
