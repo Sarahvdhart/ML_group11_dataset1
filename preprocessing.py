@@ -29,15 +29,8 @@ class CustomPreprocessor(BaseEstimator, TransformerMixin):
         # 3) Combine criteria: only keep features that pass both checks
         self.keep_columns_ = X.columns[keep_zero & keep_var]
         X = X[self.keep_columns_]
-    
-    # dit kan denk ik weg, we hebben namelijk geen NaN's 
-        # 4) Compute the medians for imputation (after dropping features)
-        # self.medians_ = X.median()
 
-        # 5) Impute NaNs with medians (this is necessary before fitting the scaler and calculating IQR bounds)
-        # X = X.fillna(self.medians_)
-
-        # 6) Correlation filter (> corr_threshold)
+        # 4) Correlation filter (> corr_threshold)
         corr_matrix = X.corr().abs()
         upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
 
@@ -47,7 +40,7 @@ class CustomPreprocessor(BaseEstimator, TransformerMixin):
 
         X = X[self.selected_columns_]
 
-        # 7) IQR clipping bounds calculation (if enabled)
+        # 5) IQR clipping bounds calculation (if enabled)
         if self.clip_iqr:
             Q1 = X.quantile(0.25)
             Q3 = X.quantile(0.75)
@@ -55,7 +48,7 @@ class CustomPreprocessor(BaseEstimator, TransformerMixin):
             self.lower_ = Q1 - 1.5 * IQR # Lower bound, check if we will use this later
             self.upper_ = Q3 + 1.5 * IQR # Upper bound, check if we will use this later
 
-        # 8) Fit the scaler
+        # 6) Fit the scaler
         self.scaler.fit(X)
         return self
 
@@ -66,18 +59,14 @@ class CustomPreprocessor(BaseEstimator, TransformerMixin):
         # 1) Keep only the columns that were selected during fitting
         X = X[self.keep_columns_]
 
-# dit kan denk ik weg, we hebben namelijk geen NaN's
-        # 2) Impute NaNs with the medians calculated during fitting
-        # X = X.fillna(self.medians_)
-
-        # 3) Remove highly correlated features found during fitting
+        # 2) Remove highly correlated features found during fitting
         X = X[self.selected_columns_]
 
-        # 4) Outlier clipping based on IQR bounds (if enabled)
+        # 3) Outlier clipping based on IQR bounds (if enabled)
         if self.clip_iqr:
             X = X.clip(self.lower_, self.upper_, axis=1)
 
-        # 5) Scale the features using the fitted scaler
+        # 4) Scale the features using the fitted scaler
         X_scaled = self.scaler.transform(X)
 
         return X_scaled
