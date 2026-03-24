@@ -14,7 +14,7 @@ def get_rf_pipeline():
     return Pipeline([
         ("preprocess", preprocessing.CustomPreprocessor(
             zero_threshold=0.90,
-            clip_iqr=False,
+            clip_iqr=True,
             corr_threshold=0.85
         )),
         ("classifier", RandomForestClassifier(random_state=42))
@@ -36,7 +36,7 @@ def get_rf_pipeline():
 # Defining the hyperparameter grid for Random Forest Classifier
 def get_rf_param_grid():
     return {
-        'classifier__n_estimators': [50, 100, 200, 500], #amount of trees
+        'classifier__n_estimators': [100, 200, 300, 400], #amount of trees
         'classifier__max_depth': [3, 4, 5, 6], #total amount of splits allowed in a tree; how deep the tree can grow
         'classifier__min_samples_split': [5, 10, 15],#minimum amount of samples for a split in a tree
         'classifier__min_samples_leaf': [3, 5, 8], #minimum amount of samples for a leaf in a tree
