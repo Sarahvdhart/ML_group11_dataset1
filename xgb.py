@@ -8,7 +8,7 @@ def get_xgb_pipeline():
     return Pipeline([
         ("preprocess", CustomPreprocessor(
             zero_threshold=0.90,
-            clip_iqr=False,
+            clip_iqr=True,
             corr_threshold=0.85
         )),
         ("classifier", XGBClassifier(

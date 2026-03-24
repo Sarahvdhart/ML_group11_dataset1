@@ -6,12 +6,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import StratifiedKFold, RandomizedSearchCV
-from sklearn.metrics import roc_auc_score, roc_curve, auc, confusion_matrix
+from sklearn.metrics import roc_auc_score, roc_curve, auc, confusion_matrix, accuracy_score
 
 #import classifiers and the param grids
 from SVM import get_svm_pipeline, get_svm_param_grid
 from RF import get_rf_pipeline, get_rf_param_grid
 from xgb import get_xgb_pipeline, get_xgb_param_grid
+
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
 
 # Load data
 df = pd.read_csv("worclipo/Lipo_radiomicFeatures.csv")
@@ -37,6 +40,7 @@ for model_name, (pipeline, param_grid) in models.items():
     print(f"\n===== {model_name} =====")
     
     outer_scores = []
+    outer_acc = []
     outer_sens = []
     outer_spec = []
     roc_data[model_name] = []
@@ -60,16 +64,23 @@ for model_name, (pipeline, param_grid) in models.items():
 
         grid.fit(X_train, y_train)
 
-        # Test best model on outer fold
+        # Test best model on outer fold for AUC
         best_model = grid.best_estimator_
         if hasattr(best_model, "decision_function"):
-            y_pred = best_model.decision_function(X_test)
+            y_score = best_model.decision_function(X_test)
         else:
-            y_pred = best_model.predict_proba(X_test)[:, 1]
+            y_score = best_model.predict_proba(X_test)[:, 1]
 
+        # voor accuracy/sensitivity/specificity
+        y_pred = best_model.predict(X_test)
+        
         #auc
-        auc = roc_auc_score(y_test, y_pred)
-        outer_scores.append(auc)
+        fold_auc = roc_auc_score(y_test, y_score)
+        outer_scores.append(fold_auc)
+
+        #accuracy
+        accuracy = accuracy_score(y_test, y_pred)
+        outer_acc.append(accuracy)
 
         #sensitivity and specificity
         y_pred_label = (y_pred >= 0.5).astype(int)
@@ -86,13 +97,18 @@ for model_name, (pipeline, param_grid) in models.items():
         best_params_per_fold.append(grid.best_params_)
 
         # ROC data opslaan
-        fpr, tpr, _ = roc_curve(y_test, y_pred)
+        fpr, tpr, _ = roc_curve(y_test, y_score)
         roc_data[model_name].append((fpr, tpr))
 
-        print(f"Fold {fold}: AUC = {auc:.4f}, Sens = {sensitivity:.3f}, Spec = {specificity:.3f}, Best params = {grid.best_params_}")
+        print(
+            f"Fold {fold}: AUC = {fold_auc:.4f}, Acc = {accuracy:.3f}, "
+            f"Sens = {sensitivity:.3f}, Spec = {specificity:.3f}, "
+            f"Best params = {grid.best_params_}"
+        )
 
     all_results[model_name] = {
         "AUC": outer_scores,
+        "Accuracy": outer_acc,
         "Sensitivity": outer_sens,
         "Specificity": outer_spec
     }
@@ -102,96 +118,62 @@ summary = []
 for model, metrics in all_results.items():
     mean_auc = np.mean(metrics["AUC"])
     std_auc = np.std(metrics["AUC"])
+    mean_acc = np.mean(metrics["Accuracy"])
+    std_acc = np.std(metrics["Accuracy"])
     mean_sens = np.mean(metrics["Sensitivity"])
+    std_sens = np.std(metrics["Sensitivity"])
     mean_spec = np.mean(metrics["Specificity"])
-    
-    summary.append([model, mean_auc, std_auc, mean_sens, mean_spec])
+    std_spec = np.std(metrics["Specificity"])
 
-df_summary = pd.DataFrame(summary, columns=["Model", "Mean AUC", "Std AUC", "Mean Sensitivity", "Mean Specificity"])
+    
+    summary.append([model, mean_auc, std_auc, mean_acc, std_acc,mean_sens, std_sens, mean_spec, std_spec])
+
+df_summary = pd.DataFrame(summary, columns=["Model", "Mean AUC", "Std AUC", "Mean Accuracy", "Std Accuracy", "Mean Sensitivity", "Std Sensitivity", "Mean Specificity", "Std Specificity"])
 print("\n=== Summary Table ===")
 print(df_summary.round(3))
 
 
-# # Plot mean ROC curves per model
-# plt.figure(figsize=(8, 6))
-# for model_name, roc_folds in roc_data.items():
-#     tprs = []
-#     aucs = []
-#     mean_fpr = np.linspace(0, 1, 100)
+# Plot ROC curves in 3 subplots
+fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
-#     for fpr, tpr in roc_folds:
-#         # Interpoleer TPR naar dezelfde FPR-schaal
-#         interp_tpr = np.interp(mean_fpr, fpr, tpr)
-#         interp_tpr[0] = 0.0
-#         tprs.append(interp_tpr)
-#         aucs.append(auc(fpr, tpr))
+for ax, (model_name, roc_folds) in zip(axes, roc_data.items()):
+    tprs = [] #true positive rate
+    aucs_per_fold = []
+    mean_fpr = np.linspace(0, 1, 100) #false positive rate
 
-#     # Bereken gemiddelde en std TPR
-#     mean_tpr = np.mean(tprs, axis=0)
-#     mean_auc = np.mean(aucs)
-#     std_tpr = np.std(tprs, axis=0)
-#     std_auc = np.std(aucs)
+    for fpr, tpr in roc_folds:
+        # Interpoleer TPR naar dezelfde FPR-schaal
+        interp_tpr = np.interp(mean_fpr, fpr, tpr)
+        interp_tpr[0] = 0.0
+        tprs.append(interp_tpr)
+        aucs_per_fold.append(auc(fpr, tpr))
 
-#     # Plot mean ROC
-#     plt.plot(mean_fpr, mean_tpr,
-#              label=f"{model_name} (AUC = {mean_auc:.2f} ± {std_auc:.2f})",
-#              lw=2)
+    # Bereken gemiddelde en std TPR
+    mean_tpr = np.mean(tprs, axis=0)
+    mean_auc = np.mean(aucs_per_fold)
+    std_tpr = np.std(tprs, axis=0)
+    std_auc = np.std(aucs_per_fold)
 
-#     # Plot ±1 std als shaded area
-#     plt.fill_between(mean_fpr,
-#                      mean_tpr - std_tpr,
-#                      mean_tpr + std_tpr,
-#                      alpha=0.2)
+    # Plot mean ROC
+    ax.plot(mean_fpr, mean_tpr,
+            label=f"{model_name}\nAUC = {mean_auc:.2f} ± {std_auc:.2f}",
+            lw=2)
 
-# # Chance line
-# plt.plot([0, 1], [0, 1], 'k--', label="Chance (AUC = 0.5)")
+    # Plot ±1 std als shaded area
+    ax.fill_between(mean_fpr,
+                    mean_tpr - std_tpr,
+                    mean_tpr + std_tpr,
+                    alpha=0.2)
 
-# plt.xlabel("False Positive Rate")
-# plt.ylabel("True Positive Rate")
-# plt.title("Mean ROC Curves per Classifier")
-# plt.legend(loc="lower right")
-# plt.grid(alpha=0.3)
-# plt.show()
+    # Chance line
+    ax.plot([0, 1], [0, 1], 'k--', label="Chance (AUC = 0.5)")
 
+    ax.set_xlabel("False Positive Rate")
+    ax.set_ylabel("True Positive Rate")
+    ax.set_title(model_name)
+    ax.legend(loc="lower right")
+    ax.grid(alpha=0.3)
 
-# # #boxplot met seaborn
-# # # long format maken
-# # df_plot = pd.DataFrame({
-# #     "AUC": sum(all_results.values(), []),
-# #     "Model": sum([[k]*len(v) for k, v in all_results.items()], [])
-# # })
-
-# # plt.figure()
-
-# # sns.boxplot(x="Model", y="AUC", data=df_plot)
-# # sns.stripplot(x="Model", y="AUC", data=df_plot, jitter=True)
-
-# plt.title("Model comparison (Nested CV AUC)")
-# plt.ylabel("AUC")
-
-# plt.show()
-
-# # ROC curve plotten
-# plt.figure()
-
-# for model_name, curves in roc_data.items():
-#     mean_fpr = np.linspace(0, 1, 100)
-#     tprs = []
-
-#     for fpr, tpr in curves:
-#         tpr_interp = np.interp(mean_fpr, fpr, tpr)
-#         tprs.append(tpr_interp)
-
-#     mean_tpr = np.mean(tprs, axis=0)
-
-#     plt.plot(mean_fpr, mean_tpr, label=model_name)
-
-# # random classifier lijn
-# plt.plot([0, 1], [0, 1], linestyle="--")
-
-# plt.xlabel("False Positive Rate")
-# plt.ylabel("True Positive Rate")
-# plt.title("Mean ROC Curve (Nested CV)")
-# plt.legend()
-
-# plt.show()
+plt.suptitle("Mean ROC Curves per Classifier", fontsize=16)
+plt.tight_layout(rect=[0, 0, 1, 0.95])
+plt.show()
