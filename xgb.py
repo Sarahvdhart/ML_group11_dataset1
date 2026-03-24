@@ -18,11 +18,11 @@ def get_xgb_pipeline():
 
 def get_xgb_param_grid():
     return {
-        'classifier__n_estimators': randint(50, 201),
-        'classifier__max_depth': [3, 4, 5, 6, 7],
-        'classifier__learning_rate': loguniform(0.01, 0.2),
-        'classifier__subsample': uniform(0.7, 1.0),
-        'classifier__colsample_bytree': uniform(0.7, 1.0),
-        'classifier__reg_lambda': uniform(0.5, 1.5),
-        'classifier__reg_alpha': uniform(0, 1)
+        'classifier__n_estimators': randint(50, 201),          # 50 to 200
+        'classifier__max_depth': randint(3, 8),               # 3 to 7
+        'classifier__learning_rate': loguniform(0.01, 0.2),   # 0.01 to 0.2
+        'classifier__subsample': uniform(0.7, 0.3),           # 0.7 to 1.0
+        'classifier__colsample_bytree': uniform(0.7, 0.3),    # 0.7 to 1.0
+        'classifier__reg_lambda': uniform(0.5, 1.0),          # 0.5 to 1.5
+        'classifier__reg_alpha': uniform(0.0, 1.0)            # 0 to 1
     }
