@@ -38,7 +38,7 @@ def get_rf_param_grid():
     return {
         'classifier__n_estimators': [100, 200, 300, 400], #amount of trees
         'classifier__max_depth': [3, 4, 5, 6], #total amount of splits allowed in a tree; how deep the tree can grow
-        'classifier__min_samples_split': [5, 10, 15],#minimum amount of samples for a split in a tree
+        'classifier__min_samples_split': np.arange(5, 16, 1), #minimum amount of samples for a split in a tree
         'classifier__min_samples_leaf': [3, 5, 8], #minimum amount of samples for a leaf in a tree
         'classifier__max_features': ['sqrt', 'log2', 0.1, 0.2, 0.3], # 0.1 t/m 0.3 per decision, use only a subset of features for each tree
         'classifier__criterion': ['gini', 'log_loss'], #splitting criterion
