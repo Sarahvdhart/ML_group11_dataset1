@@ -2,6 +2,7 @@ from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 from preprocessing import CustomPreprocessor
 from scipy.stats import loguniform, uniform, randint
+import numpy as np
 
 def get_xgb_pipeline():
     return Pipeline([
@@ -18,8 +19,8 @@ def get_xgb_pipeline():
 
 def get_xgb_param_grid():
     return {
-        'classifier__n_estimators': randint(50, 201),          # 50 to 200
-        'classifier__max_depth': randint(3, 8),               # 3 to 7
+        'classifier__n_estimators': np.arange(50,201),          # 50 to 200
+        'classifier__max_depth': np.arange(3,8),               # 3 to 7
         'classifier__learning_rate': loguniform(0.01, 0.2),   # 0.01 to 0.2
         'classifier__subsample': uniform(0.7, 0.3),           # 0.7 to 1.0
         'classifier__colsample_bytree': uniform(0.7, 0.3),    # 0.7 to 1.0
