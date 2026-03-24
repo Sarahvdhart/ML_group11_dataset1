@@ -21,5 +21,7 @@ def get_xgb_param_grid():
         'classifier__max_depth': [3, 5, 7],
         'classifier__learning_rate': [0.01, 0.05, 0.1, 0.15, 0.2],
         'classifier__subsample': [0.7, 0.8, 0.9, 1.0],
-        'classifier__colsample_bytree': [0.7, 0.8, 0.9, 1.0]
+        'classifier__colsample_bytree': [0.7, 0.8, 0.9, 1.0],
+        'classifier__reg_lambda': [0.5, 1, 1.5],
+        'classifier__reg_alpha': [0, 0.5, 1]
     }
