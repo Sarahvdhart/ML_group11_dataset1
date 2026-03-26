@@ -1,25 +1,27 @@
+#Code that contains pipeline and hyperparameter grid for XGBoost
+
 #Import functions
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 from preprocessing import CustomPreprocessor
-from scipy.stats import loguniform, uniform, randint
+from scipy.stats import loguniform, uniform
 import numpy as np
 
-#Pipeline for XGBoost Classifier
+#Pipeline for XGBoost
 def get_xgb_pipeline():
     return Pipeline([
         ("preprocess", CustomPreprocessor(
             zero_threshold=0.90,
-            clip_iqr=True,
+            clip_iqr=True,              
             corr_threshold=0.85
         )),
         ("classifier", XGBClassifier(
-            eval_metric="logloss",
+            eval_metric="logloss",      #Use negative log-likelihood as evaluation metric
             random_state=42
         ))
     ])
 
-#Hyperparameter tuning
+#Hyperparameter grid XGBoost
 def get_xgb_param_grid():
     return {
         'classifier__n_estimators': np.arange(50,201),          # 50 to 200
