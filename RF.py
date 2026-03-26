@@ -1,16 +1,9 @@
-import matplotlib.pyplot as plt 
-import pandas as pd
-import numpy as np
-import sklearn as sk
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import RobustScaler
-import worclipo.load_data 
+#Import functions
 from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestClassifier
 import preprocessing
-from sklearn.feature_selection import SelectFdr, VarianceThreshold, f_classif, SelectKBest
 
-#-------------------------------------------------------------------------------------------------
-#Defining the pipeline for Random Forest Classifier
+#Pipeline for Random Forest Classifier
 def get_rf_pipeline():
     return Pipeline([
         ("preprocess", preprocessing.CustomPreprocessor(
@@ -34,4 +27,3 @@ def get_rf_param_grid():
         'classifier__ccp_alpha': [0.0, 0.01, 0.02], #how aggresive do you want to prune the tree (i.e. remove branches that have little importance)
         'classifier__bootstrap': [True]
         }
-#------------------------------------------------------------------------------------------------

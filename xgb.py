@@ -1,9 +1,11 @@
+#Import functions
 from sklearn.pipeline import Pipeline
 from xgboost import XGBClassifier
 from preprocessing import CustomPreprocessor
 from scipy.stats import loguniform, uniform, randint
 import numpy as np
 
+#Pipeline for XGBoost Classifier
 def get_xgb_pipeline():
     return Pipeline([
         ("preprocess", CustomPreprocessor(
@@ -17,6 +19,7 @@ def get_xgb_pipeline():
         ))
     ])
 
+#Hyperparameter tuning
 def get_xgb_param_grid():
     return {
         'classifier__n_estimators': np.arange(50,201),          # 50 to 200
