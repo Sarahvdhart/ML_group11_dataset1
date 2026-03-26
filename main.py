@@ -182,56 +182,46 @@ plt.suptitle("Mean ROC Curves per Classifier", fontsize=16)
 plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.show()
 
-# Print best classifier
+# Print best classifier based on AUC and check if it meets the accuracy (70%) requirement
 best_model_name = df_summary.loc[df_summary["Mean AUC"].idxmax(), "Model"]
+best_model_row = df_summary.loc[df_summary["Model"] == best_model_name]
+
+mean_acc = best_model_row["Mean Accuracy"].values[0]
+
 print(f"\nBest model based on AUC: {best_model_name}")
+print(f"Mean Accuracy: {mean_acc:.3f}")
 
-from collections import Counter
-import numpy as np
+if mean_acc >= 0.70:
+    print("Accuracy requirement met (≥ 0.70)")
+else:
+    print("Accuracy requirement NOT met (< 0.70)")
 
-def select_final_hyperparameters(best_params_per_fold, fold_scores):
-    final_params = {}
-    param_names = best_params_per_fold[0].keys()
+# Get parameters of the best model for final tuning on all data
+best_pipeline, best_param_grid = models[best_model_name]
 
-    for param in param_names:
-        values = [params[param] for params in best_params_per_fold]
-
-        counts = Counter(values)
-        max_count = max(counts.values())
-        candidates = [val for val, count in counts.items() if count == max_count]
-
-        # als één duidelijke winnaar
-        if len(candidates) == 1:
-            final_params[param] = candidates[0]
-        else:
-            # tie-break → beste gemiddelde performance
-            candidate_perf = {}
-
-            for candidate in candidates:
-                scores = [
-                    fold_scores[i]
-                    for i in range(len(best_params_per_fold))
-                    if best_params_per_fold[i][param] == candidate
-                ]
-                candidate_perf[candidate] = np.mean(scores)
-
-            best_candidate = max(candidate_perf, key=candidate_perf.get)
-            final_params[param] = best_candidate
-
-    return final_params
-
-final_best_params = select_final_hyperparameters(
-    best_params_all_models[best_model_name],
-    all_results[best_model_name]["AUC"]
+# New RandomizedSearchCV on the entire dataset with the best model and its parameter grid
+final_search = RandomizedSearchCV(
+    estimator=best_pipeline,
+    param_distributions=best_param_grid,
+    n_iter=40,
+    cv=inner_cv,
+    scoring="roc_auc",
+    n_jobs=-1,
+    random_state=42,
+    refit=True
 )
 
+final_search.fit(X, y)
+
+# Train final model with best hyperparameters on the entire dataset
+final_model = final_search.best_estimator_
+
+# Print final selected hyperparameters and performance
 print("\nFinal selected hyperparameters:")
-for k, v in final_best_params.items():
+for k, v in final_search.best_params_.items():
     print(f"{k}: {v}")
 
-best_pipeline, _ = models[best_model_name]
+# The best mean CV AUC during the final tuning is:
+print(f"\nBest mean CV AUC during final tuning: {final_search.best_score_:.4f}")
+print(f"Final {best_model_name} model trained on all data.")
 
-final_model = best_pipeline.set_params(**final_best_params)
-final_model.fit(X, y)
-
-print(f"\nFinal {best_model_name} model trained on all data.")   
