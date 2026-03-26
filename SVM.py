@@ -1,11 +1,11 @@
-#import functions
+#Import functions
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 from preprocessing import CustomPreprocessor
 from sklearn.feature_selection import VarianceThreshold, f_classif, SelectKBest
 from scipy.stats import loguniform, uniform
 
-#pipeline for SVM
+#Pipeline for SVM
 def get_svm_pipeline():
     return Pipeline([
         ("preprocess", CustomPreprocessor(
@@ -18,7 +18,7 @@ def get_svm_pipeline():
         ("classifier", SVC())
     ])
 
-#hyperparameter tuning
+#Hyperparameter tuning
 def get_svm_param_grid():
     return ({
         "classifier__kernel": ["linear", "rbf", "poly", "sigmoid"],          # discrete

@@ -71,6 +71,7 @@ class CustomPreprocessor(BaseEstimator, TransformerMixin):
 
         return X_scaled
     
+    
     def get_feature_names_out(self, input_features=None):
         return np.array(self.selected_columns_)
     
