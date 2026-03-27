@@ -4,7 +4,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import StratifiedKFold, RandomizedSearchCV
 from sklearn.metrics import roc_auc_score, roc_curve, auc, confusion_matrix, accuracy_score
 
@@ -87,7 +86,7 @@ for model_name, (pipeline, param_grid) in models.items():
         #Sensitivity and specificity
         y_pred_label = (y_pred >= 0.5).astype(int)
 
-        #Confusion matrix voor sensitiviteit en specificiteit
+        #Confusion matrix for sensitivity and specificity
         tn, fp, fn, tp = confusion_matrix(y_test, y_pred_label).ravel()
         sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0 
         specificity = tn / (tn + fp) if (tn + fp) > 0 else 0 
@@ -186,6 +185,7 @@ mean_acc = best_model_row["Mean Accuracy"].values[0]
 print(f"\nBest model based on AUC: {best_model_name}")
 print(f"Mean Accuracy: {mean_acc:.3f}")
 
+#Check if accuracy requirement is met for best model (≥ 0.70) to ensure clinical relevance
 if mean_acc >= 0.70:
     print("Accuracy requirement met (≥ 0.70)")
 else:
@@ -194,7 +194,7 @@ else:
 #Get pipeline and hyperparameter grid of best performing classifier
 best_pipeline, best_param_grid = models[best_model_name]
 
-#Hyperparameter search for final model these are based on 100% data
+#Hyperparameter search for final model based on 100% of the data
 final_search = RandomizedSearchCV(
     estimator=best_pipeline,
     param_distributions=best_param_grid,
