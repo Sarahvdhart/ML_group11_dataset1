@@ -35,5 +35,5 @@ This will:
 * Results may vary slightly depending on the Python version and the versions of the installed packages.
 
 ## Authors
-Technical Medicine Students, Group 11
+Technical Medicine Students, Group 11: 
 Wouter van Wijck (5527562), Sarah van der Hart (5743931), Tygo Hillen (6236227) and Lara Verhoef (5297788)
