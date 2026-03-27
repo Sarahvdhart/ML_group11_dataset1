@@ -43,8 +43,6 @@ for model_name, (pipeline, param_grid) in models.items():
     
     outer_scores = []
     outer_acc = []
-    outer_sens = []
-    outer_spec = []
     roc_data[model_name] = []
     best_params_per_fold = []
 
@@ -83,34 +81,18 @@ for model_name, (pipeline, param_grid) in models.items():
         accuracy = accuracy_score(y_test, y_pred)
         outer_acc.append(accuracy)
 
-        #Sensitivity and specificity
-        y_pred_label = (y_pred >= 0.5).astype(int)
-
-        #Confusion matrix for sensitivity and specificity
-        tn, fp, fn, tp = confusion_matrix(y_test, y_pred_label).ravel()
-        sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0 
-        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0 
-
-        outer_sens.append(sensitivity)
-        outer_spec.append(specificity)
-
-        best_params_per_fold.append(grid.best_params_)
-
         #Save ROC data for figure
         fpr, tpr, _ = roc_curve(y_test, y_score)
         roc_data[model_name].append((fpr, tpr))
 
         print(
             f"Fold {fold}: AUC = {fold_auc:.4f}, Acc = {accuracy:.3f}, "
-            f"Sens = {sensitivity:.3f}, Spec = {specificity:.3f}, "
             f"Best params = {grid.best_params_}"
         )
 
     all_results[model_name] = {
         "AUC": outer_scores,
         "Accuracy": outer_acc,
-        "Sensitivity": outer_sens,
-        "Specificity": outer_spec
     }
 
     best_params_all_models[model_name] = best_params_per_fold
@@ -122,14 +104,10 @@ for model, metrics in all_results.items():
     std_auc = np.std(metrics["AUC"])
     mean_acc = np.mean(metrics["Accuracy"])
     std_acc = np.std(metrics["Accuracy"])
-    mean_sens = np.mean(metrics["Sensitivity"])
-    std_sens = np.std(metrics["Sensitivity"])
-    mean_spec = np.mean(metrics["Specificity"])
-    std_spec = np.std(metrics["Specificity"])
+    
+    summary.append([model, mean_auc, std_auc, mean_acc, std_acc])
 
-    summary.append([model, mean_auc, std_auc, mean_acc, std_acc,mean_sens, std_sens, mean_spec, std_spec])
-
-df_summary = pd.DataFrame(summary, columns=["Model", "Mean AUC", "Std AUC", "Mean Accuracy", "Std Accuracy", "Mean Sensitivity", "Std Sensitivity", "Mean Specificity", "Std Specificity"])
+df_summary = pd.DataFrame(summary, columns=["Model", "Mean AUC", "Std AUC", "Mean Accuracy", "Std Accuracy"])
 print("\n=== Summary Table ===")
 print(df_summary.round(3))
 
