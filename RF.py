@@ -4,6 +4,7 @@
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
 import preprocessing
+import numpy as np
 
 #Pipeline for RF
 def get_rf_pipeline():
