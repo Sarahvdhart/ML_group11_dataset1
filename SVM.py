@@ -13,7 +13,7 @@ def get_svm_pipeline():
             clip_iqr=True,
             corr_threshold=0.85
         )),
-        ("fold_variance_filter", VarianceThreshold(threshold=0)), #haalt constante features eruit vlak voor anova
+        ("fold_variance_filter", VarianceThreshold(threshold=0)), #removes features with zero variance before ANOVA
         ("feature_selection", SelectKBest(score_func=f_classif, k=20)),
         ("classifier", SVC())
     ])
