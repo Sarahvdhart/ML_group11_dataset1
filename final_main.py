@@ -43,8 +43,6 @@ for model_name, (pipeline, param_grid) in models.items():
     
     outer_scores = []
     outer_acc = []
-    outer_sens = []
-    outer_spec = []
     roc_data[model_name] = []
     best_params_per_fold = []
 
@@ -82,11 +80,6 @@ for model_name, (pipeline, param_grid) in models.items():
         #Accuracy
         accuracy = accuracy_score(y_test, y_pred)
         outer_acc.append(accuracy)
-
-        #Sensitivity and specificity
-        y_pred_label = (y_pred >= 0.5).astype(int)
-
-        best_params_per_fold.append(grid.best_params_)
 
         #Save ROC data for figure
         fpr, tpr, _ = roc_curve(y_test, y_score)
