@@ -15,16 +15,10 @@ def get_svm_pipeline():
             clip_iqr=True, 
             corr_threshold=0.85
         )),
-<<<<<<< HEAD
-        ("fold_variance_filter", VarianceThreshold(threshold=0)), #removes features with zero variance before ANOVA
-        ("feature_selection", SelectKBest(score_func=f_classif, k=20)),
-        ("classifier", SVC())
-=======
         ("fold_variance_filter", VarianceThreshold(threshold=0)), #Remove features with 0 variance
         ("feature_selection", SelectKBest(score_func=f_classif, k=20)), #Select best 20 features
         ("classifier", SVC(
         ))
->>>>>>> fbbc62a139f728c401ea42b71fa814735f6b8505
     ])
 
 #Hyperparametergrid SVM
