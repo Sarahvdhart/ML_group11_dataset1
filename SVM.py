@@ -1,3 +1,5 @@
+#Code that contains pipeline and hyperparameter grid for SVM
+
 #Import functions
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
@@ -10,20 +12,27 @@ def get_svm_pipeline():
     return Pipeline([
         ("preprocess", CustomPreprocessor(
             zero_threshold=0.90,
-            clip_iqr=True,
+            clip_iqr=True, 
             corr_threshold=0.85
         )),
+<<<<<<< HEAD
         ("fold_variance_filter", VarianceThreshold(threshold=0)), #removes features with zero variance before ANOVA
         ("feature_selection", SelectKBest(score_func=f_classif, k=20)),
         ("classifier", SVC())
+=======
+        ("fold_variance_filter", VarianceThreshold(threshold=0)), #Remove features with 0 variance
+        ("feature_selection", SelectKBest(score_func=f_classif, k=20)), #Select best 20 features
+        ("classifier", SVC(
+        ))
+>>>>>>> fbbc62a139f728c401ea42b71fa814735f6b8505
     ])
 
-#Hyperparameter tuning
+#Hyperparametergrid SVM
 def get_svm_param_grid():
     return ({
-        "classifier__kernel": ["linear", "rbf", "poly", "sigmoid"],          # discrete
-        "classifier__C": loguniform(0.01, 100),                              # continue op log-schaal
-        "classifier__gamma": loguniform(0.001, 1),                           # continue op log-schaal
-        "classifier__degree": [2, 3, 4],                                     # discrete
-        "classifier__coef0": uniform(0.0, 1.0)                               # continue uniform 0–1
+        "classifier__kernel": ["linear", "rbf", "poly", "sigmoid"],         
+        "classifier__C": loguniform(0.01, 100),                              
+        "classifier__gamma": loguniform(0.001, 1),                          
+        "classifier__degree": [2, 3, 4],                                    
+        "classifier__coef0": uniform(0.0, 1.0)                               
     })

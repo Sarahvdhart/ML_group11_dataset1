@@ -1,36 +1,33 @@
-# This file contains the custom preprocessing class. It includes:
-
-# Importing necessary libraries
+#Importing functions
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import RobustScaler
 
-# Make a class: CustomPreprocessor, which inherits from BaseEstimator and TransformerMixin, so it can be used in a sklearn pipeline. 
+#Make a class to be used in the pipeline
 class CustomPreprocessor(BaseEstimator, TransformerMixin):
     def __init__(self, zero_threshold=0.90, clip_iqr=True, corr_threshold=0.85): 
-        self.zero_threshold = zero_threshold # Threshold for dropping features based on zero ratio at 90%
-        self.clip_iqr = clip_iqr # Whether to perform outlier clipping based on IQR
-        self.corr_threshold = corr_threshold # Threshold for dropping highly correlated features
-        self.scaler = RobustScaler() # RobustScaler to handle outliers
+        self.zero_threshold = zero_threshold #Drop feature if 0 ratio is above threshold
+        self.clip_iqr = clip_iqr #Perform outlier clipping based on IQR
+        self.corr_threshold = corr_threshold #Drop features with correlation above threshold
+        self.scaler = RobustScaler()
 
-    # Fit method: calculates which features to keep, the medians for imputation, the correlated features to drop, and the IQR bounds if clipping is enabled. It also fits the scaler on the training data.
+    #Function Fit to determine which features to drop
     def fit(self, X, y=None):
         X = pd.DataFrame(X)
 
-        # 1) Drop features with too many zeros
+        #Drop features with too many zeros
         zero_ratio = (X == 0).mean()
         keep_zero = zero_ratio <= self.zero_threshold
         
-        # 2) Drop features with zero variance 
+        #Drop features with zero variance 
         variance = X.var()
         keep_var = variance > 0
         
-        # 3) Combine criteria: only keep features that pass both checks
         self.keep_columns_ = X.columns[keep_zero & keep_var]
         X = X[self.keep_columns_]
 
-        # 4) Correlation filter (> corr_threshold)
+        #Correlation filter
         corr_matrix = X.corr().abs()
         upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
 
@@ -40,37 +37,29 @@ class CustomPreprocessor(BaseEstimator, TransformerMixin):
 
         X = X[self.selected_columns_]
 
-        # 5) IQR clipping bounds calculation (if enabled)
+        #Outlier removal
         if self.clip_iqr:
             Q1 = X.quantile(0.25)
             Q3 = X.quantile(0.75)
             IQR = Q3 - Q1
-            self.lower_ = Q1 - 1.5 * IQR # Lower bound, check if we will use this later
-            self.upper_ = Q3 + 1.5 * IQR # Upper bound, check if we will use this later
+            self.lower_ = Q1 - 1.5 * IQR
+            self.upper_ = Q3 + 1.5 * IQR
 
-        # 6) Fit the scaler
         self.scaler.fit(X)
         return self
 
-    # Transform method: applies the same transformations to the data: keeps the same features, imputes NaNs, performs outlier clipping if enabled, and scales the features using the fitted scaler.
+    #Define function transform that applies transformation to data
     def transform(self, X):
         X = pd.DataFrame(X)
+        X = X[self.keep_columns_] #Keep columns selected during fitting
+        X = X[self.selected_columns_] #Remove highly correlated features
 
-        # 1) Keep only the columns that were selected during fitting
-        X = X[self.keep_columns_]
-
-        # 2) Remove highly correlated features found during fitting
-        X = X[self.selected_columns_]
-
-        # 3) Outlier clipping based on IQR bounds (if enabled)
-        if self.clip_iqr:
+        if self.clip_iqr: #Outlier clipping
             X = X.clip(self.lower_, self.upper_, axis=1)
 
-        # 4) Scale the features using the fitted scaler
-        X_scaled = self.scaler.transform(X)
+        X_scaled = self.scaler.transform(X) 
 
         return X_scaled
-    
     
     def get_feature_names_out(self, input_features=None):
         return np.array(self.selected_columns_)
